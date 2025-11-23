@@ -3,36 +3,60 @@ attribute vec3 inVertex;
 attribute vec3 inNormal;
 attribute vec3 inTangent;
 attribute vec2 inTexCoords;
+
 varying float outDiff;
 varying float outSpec;
 varying vec2 outTexCoords;
+
 uniform mat4 ModelViewMatrix;
 uniform mat4 ModelViewProjectionMatrix;
 uniform mat4 NormalMatrix;
 uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 uniform float shininess;
+
+uniform vec2 texCenter;
+uniform float texAngle;
+uniform float texScale;
+
 void main() {
     vec4 fragPosition = ModelViewMatrix * vec4(inVertex, 1.0);
     vec3 position = fragPosition.xyz;
     vec3 transformedNormal = normalize((NormalMatrix * vec4(inNormal, 0.0)).xyz);
+    
     vec3 lightDir = normalize(lightPosition - position);
     vec3 viewDir = normalize(viewPosition - position);
     vec3 reflectDir = reflect(-lightDir, transformedNormal);
+    
     float diff = max(dot(transformedNormal, lightDir), 0.0);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    
     outDiff = diff;
     outSpec = spec;
-    outTexCoords = inTexCoords;
+    
+    vec2 centered = inTexCoords - texCenter;
+    
+    float s = sin(texAngle);
+    float c = cos(texAngle);
+    mat2 rotationMat = mat2(c, -s, s, c);
+    vec2 rotated = rotationMat * centered;
+    
+    vec2 scaled = rotated * texScale;
+    
+    outTexCoords = scaled + texCenter;
+
     gl_Position = ModelViewProjectionMatrix * vec4(inVertex, 1.0);
 }
 `;
+
 const fragmentShaderSource = `
+
 #ifdef GL_FRAGMENT_PRECISION_HIGH
    precision highp float;
 #else
    precision mediump float;
 #endif
+
 varying float outDiff;
 varying float outSpec;
 varying vec2 outTexCoords;
@@ -40,6 +64,7 @@ uniform float ambientStrength;
 uniform float specularStrength;
 uniform sampler2D diffTexture;
 uniform sampler2D specTexture;
+
 void main() {
     vec3 diffuseColor = texture2D(diffTexture, outTexCoords).rgb;
     vec3 specularColor = texture2D(specTexture, outTexCoords).rgb;

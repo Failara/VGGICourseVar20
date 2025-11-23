@@ -47,6 +47,7 @@ function Model(name) {
     gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_SHORT, 0);
   };
 }
+
 function calculateSurfacePoint(u, v, isUpperHemisphere = true) {
   const cosU = Math.cos(u);
   const cosV = Math.cos(v);
@@ -56,6 +57,7 @@ function calculateSurfacePoint(u, v, isUpperHemisphere = true) {
   if (!isUpperHemisphere) z = -z;
   return { x: u, y: v, z: z };
 }
+
 function generateHemisphere(surface, uSteps, vSteps, isUpperHemisphere) {
   const uMin = -Math.PI,
     uMax = Math.PI;
@@ -87,6 +89,7 @@ function generateHemisphere(surface, uSteps, vSteps, isUpperHemisphere) {
     }
   }
 }
+
 function calculateAngle(a, b, c) {
   const ab = m4.subtractVectors(b, a);
   const ac = m4.subtractVectors(c, a);
@@ -96,6 +99,7 @@ function calculateAngle(a, b, c) {
   const clampedCos = Math.max(-1, Math.min(1, cosTheta));
   return Math.acos(clampedCos);
 }
+
 function CreateSurfaceData(uSteps, vSteps) {
   const surface = {
     vertexList: [],
