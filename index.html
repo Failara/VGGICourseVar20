@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-    <title>PA#1</title>
+    <title>PA#3</title>
     <style>
       body {
         background-color: #eeeeee;
@@ -21,6 +21,22 @@
       Drag your mouse on the cube to rotate it.<br />
       (On a touch screen, you can use your finger.)
     </p>
+    <input
+      type="range"
+      id="uGranularity"
+      min="1"
+      max="100"
+      value="25"
+      oninput="updateSurface()"
+    />
+    <input
+      type="range"
+      id="vGranularity"
+      min="1"
+      max="100"
+      value="25"
+      oninput="updateSurface()"
+    />
 
     <div id="canvas-holder">
       <canvas
