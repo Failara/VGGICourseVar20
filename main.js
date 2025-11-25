@@ -1,16 +1,20 @@
 "use strict";
+
 let gl;
 let shProgram;
 let spaceball;
 let surface;
+
 function deg2rad(angle) {
   return (angle * Math.PI) / 180;
 }
+
 function ShaderProgram(name, program) {
   this.name = name;
   this.prog = program;
   this.iAttribVertex = -1;
   this.iAttribNormal = -1;
+  this.iAttribTangent = -1;
   this.iAttribTexCoord = -1;
   this.iColor = -1;
   this.iModelViewProjectionMatrix = -1;
@@ -25,6 +29,7 @@ function ShaderProgram(name, program) {
     gl.useProgram(this.prog);
   };
 }
+
 function draw() {
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -58,6 +63,7 @@ function draw() {
   gl.uniform4fv(shProgram.iColor, surfaceColor);
   surface.Draw();
 }
+
 function updateLightPosition(time) {
   const angle = time * 0.001;
   const h = 5;
@@ -67,11 +73,13 @@ function updateLightPosition(time) {
   const z = r * Math.sin(angle) - 20;
   return [x, y, z];
 }
+
 function calculateNormalMatrix(modelViewMatrix) {
   let normalMatrix = m4.inverse(modelViewMatrix);
   normalMatrix = m4.transpose(normalMatrix);
   return normalMatrix;
 }
+
 let lastTime = 0;
 const fps = 30;
 const interval = 1000 / fps;
@@ -83,9 +91,11 @@ function frameControl(time) {
   }
   requestAnimationFrame(frameControl);
 }
+
 function startAnimation() {
   requestAnimationFrame(frameControl);
 }
+
 function updateSurface() {
   const uSteps = parseInt(document.getElementById("uGranularity").value, 10);
   const vSteps = parseInt(document.getElementById("vGranularity").value, 10);
@@ -121,6 +131,7 @@ function updateSurface() {
   surface.count = data.indexList.length;
   draw();
 }
+
 function loadTexture(gl, imageUrl) {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -142,12 +153,14 @@ function loadTexture(gl, imageUrl) {
   img.src = imageUrl;
   return texture;
 }
+
 function initGL() {
   let prog = createProgram(gl, vertexShaderSource, fragmentShaderSource);
   shProgram = new ShaderProgram("Basic", prog);
   shProgram.Use();
   shProgram.iAttribVertex = gl.getAttribLocation(prog, "inVertex");
   shProgram.iAttribNormal = gl.getAttribLocation(prog, "inNormal");
+  shProgram.iAttribTangent = gl.getAttribLocation(prog, "inTangent");
   shProgram.iAttribTexCoord = gl.getAttribLocation(prog, "inTexCoords");
   shProgram.iColor = gl.getUniformLocation(prog, "color");
   shProgram.iModelViewProjectionMatrix = gl.getUniformLocation(
@@ -183,6 +196,7 @@ function initGL() {
   surface.BufferData(CreateSurfaceData(25, 25));
   gl.enable(gl.DEPTH_TEST);
 }
+
 function createProgram(gl, vShader, fShader) {
   let vsh = gl.createShader(gl.VERTEX_SHADER);
   gl.shaderSource(vsh, vShader);
@@ -209,6 +223,7 @@ function createProgram(gl, vShader, fShader) {
   }
   return prog;
 }
+
 function init() {
   let canvas;
   try {
