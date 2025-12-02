@@ -19,31 +19,67 @@ function deg2rad(angle) {
 
 function handleKeyDown(event) {
   const step = 0.05;
+  const inputU = document.getElementById("centerU");
+  const inputV = document.getElementById("centerV");
+  let changed = false;
 
   switch (event.key.toLowerCase()) {
     case "a":
       textureCenter[0] -= step;
-      console.log("Center U:", textureCenter[0]);
+      changed = true;
       break;
     case "d":
       textureCenter[0] += step;
-      console.log("Center U:", textureCenter[0]);
+      changed = true;
       break;
     case "s":
       textureCenter[1] -= step;
-      console.log("Center V:", textureCenter[1]);
+      changed = true;
       break;
     case "w":
       textureCenter[1] += step;
-      console.log("Center V:", textureCenter[1]);
+      changed = true;
       break;
     case "q":
       textureAngle += 0.1;
-      break;
+      draw();
+      return;
     case "e":
       textureAngle -= 0.1;
-      break;
+      draw();
+      return;
   }
+
+  if (changed) {
+    textureCenter[0] = Math.max(0, Math.min(1, textureCenter[0]));
+    textureCenter[1] = Math.max(0, Math.min(1, textureCenter[1]));
+
+    inputU.value = textureCenter[0].toFixed(2);
+    inputV.value = textureCenter[1].toFixed(2);
+
+    draw();
+  }
+}
+
+function updateCenterFromInput() {
+  const inputU = document.getElementById("centerU");
+  const inputV = document.getElementById("centerV");
+
+  let valU = parseFloat(inputU.value);
+  let valV = parseFloat(inputV.value);
+
+  if (isNaN(valU)) valU = 0.5;
+  valU = Math.max(0, Math.min(1, valU));
+
+  if (isNaN(valV)) valV = 0.5;
+  valV = Math.max(0, Math.min(1, valV));
+
+  textureCenter = [valU, valV];
+
+  inputU.value = valU;
+  inputV.value = valV;
+
+  draw();
 }
 
 function ShaderProgram(name, program) {
