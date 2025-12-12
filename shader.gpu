@@ -8,6 +8,8 @@ varying float outDiff;
 varying float outSpec;
 varying vec2 outTexCoords;
 
+varying vec2 vOrigTexCoords;
+
 uniform mat4 ModelViewMatrix;
 uniform mat4 ModelViewProjectionMatrix;
 uniform mat4 NormalMatrix;
@@ -15,9 +17,9 @@ uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 uniform float shininess;
 
-uniform vec2 texCenter;
-uniform float texAngle;
-uniform float texScale;
+uniform vec2 texCenter;   
+uniform float texAngle;   
+uniform float texScale;   
 
 void main() {
     vec4 fragPosition = ModelViewMatrix * vec4(inVertex, 1.0);
@@ -34,13 +36,14 @@ void main() {
     outDiff = diff;
     outSpec = spec;
     
-    vec2 centered = inTexCoords - texCenter;
+    vOrigTexCoords = inTexCoords;
     
+    vec2 centered = inTexCoords - texCenter;
     float s = sin(texAngle);
     float c = cos(texAngle);
     mat2 rotationMat = mat2(c, -s, s, c);
-    vec2 rotated = rotationMat * centered;
     
+    vec2 rotated = rotationMat * centered;
     vec2 scaled = rotated * texScale;
     
     outTexCoords = scaled + texCenter;
@@ -50,7 +53,6 @@ void main() {
 `;
 
 const fragmentShaderSource = `
-
 #ifdef GL_FRAGMENT_PRECISION_HIGH
    precision highp float;
 #else
@@ -60,6 +62,10 @@ const fragmentShaderSource = `
 varying float outDiff;
 varying float outSpec;
 varying vec2 outTexCoords;
+
+varying vec2 vOrigTexCoords;
+uniform vec2 texCenter; 
+
 uniform float ambientStrength;
 uniform float specularStrength;
 uniform sampler2D diffTexture;
@@ -68,10 +74,19 @@ uniform sampler2D specTexture;
 void main() {
     vec3 diffuseColor = texture2D(diffTexture, outTexCoords).rgb;
     vec3 specularColor = texture2D(specTexture, outTexCoords).rgb;
+    
     vec3 ambient = ambientStrength * diffuseColor;
     vec3 diffuse = outDiff * diffuseColor;
     vec3 specular = outSpec * specularStrength * specularColor;
+    
     vec3 finalColor = ambient + diffuse + specular;
+
+    float dist = distance(vOrigTexCoords, texCenter);
+    
+    float dotMask = 1.0 - smoothstep(0.015, 0.02, dist);
+    
+    finalColor = mix(finalColor, vec3(1.0, 0.0, 0.0), dotMask);
+    
     gl_FragColor = vec4(finalColor, 1.0);
 }
 `;
